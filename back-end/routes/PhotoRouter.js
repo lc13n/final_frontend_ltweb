@@ -184,4 +184,32 @@ router.post("/comment/:photo_id", async (req, res) => {
   }
 });
 
+router.put("/comment/:photo_id/:comment_id", async (req, res) => {
+  const { photo_id, comment_id } = req.params;
+  const userId = req.userId;
+  const text = (req.body.comment || "").trim();
+
+  if (!text) return res.status(400).json({ error: "Bình luận trống." });
+
+  try {
+    const photo = await Photo.findById(photo_id);
+    const comment = photo?.comments.id(comment_id);
+
+    if (!photo || !comment)
+      return res.status(404).json({ error: "Không tìm thấy ảnh hoặc bình luận." });
+
+    if (comment.user_id.toString() !== userId)
+      return res.status(403).json({ error: "Không có quyền sửa." });
+
+    comment.comment = text;
+    await photo.save();
+
+    res.json({ message: "Đã sửa bình luận.", comment });
+  } catch (err) {
+    console.error("Lỗi sửa bình luận:", err);
+    res.status(500).json({ error: "Lỗi máy chủ." });
+  }
+});
+
+
 module.exports = router;
