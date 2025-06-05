@@ -67,6 +67,36 @@ export default function UserPhotos({ token, currentUser }) {
     }
   }, [userId, token, navigate]);
 
+  // Cập nhật bình luận
+const updateComment = async (photoId, commentId) => {
+  await fetch(
+    `${BACKEND_URL}/api/photosOfUser/comment/${photoId}/${commentId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ comment: editText }),
+    }
+  );
+  setEditId(null);
+  window.location.reload();
+};
+
+// Xoá bình luận
+const deleteComment = async (photoId, commentId) => {
+  await fetch(
+    `${BACKEND_URL}/api/photosOfUser/comment/${photoId}/${commentId}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  window.location.reload();
+};
+
+
   const handleCommentSubmit = async (photoId) => {
     const commentText = (newComments[photoId] || "").trim();
     if (!commentText) return;
@@ -200,6 +230,30 @@ export default function UserPhotos({ token, currentUser }) {
                 ))
               ) : (
                 <Typography variant="body2">No comments.</Typography>
+              )}
+
+              <Typography variant="body2">{c.comment}</Typography>
+
+              {c.user_id === currentUser._id && (
+                <Box mt={1}>
+                  <Button
+                    size="small"
+                    onClick={() => {
+                      setEditId(c._id);
+                      setEditText(c.comment);
+                    }}
+                  >
+                    Sửa
+                  </Button>
+              
+                  <Button
+                    size="small"
+                    color="error"
+                    onClick={() => deleteComment(photo._id, c._id)}
+                  >
+                    Xoá
+                  </Button>
+                </Box>
               )}
 
               {/* Phần thêm comment mới */}
